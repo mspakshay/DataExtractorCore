@@ -14,19 +14,20 @@ namespace FileManager.Services
 {
     public class CsvFileManager : IFileManager
     {
+        public const string PriceMultiplier = "PriceMultiplier";
         private static CsvConfiguration _config;
 
         public CsvFileManager()
         {
         }
 
-        public CsvConfiguration SetupConfig(bool isHeaderPresent, CultureInfo cultureInfo)
+        public CsvConfiguration SetupConfig()
         {
             if (_config == null)
             {
-                _config = new CsvConfiguration(cultureInfo)
+                _config = new CsvConfiguration(CultureInfo.InvariantCulture)
                 {
-                    HasHeaderRecord = isHeaderPresent,//true if firstline has header value
+                    HasHeaderRecord = true,//true if firstline has header value
                     PrepareHeaderForMatch = args => args.Header.ToLower()
                 };
             }
@@ -36,24 +37,50 @@ namespace FileManager.Services
 
         public List<Transaction> ReadFile(string filePath)
         {
-            SetupConfig(true, CultureInfo.InvariantCulture);
-
             List<Transaction> transactions = new List<Transaction>();
 
-            using (var reader = new StreamReader(filePath))
-            using (var csv = new CsvReader(reader, _config))
+            try
             {
-                csv.Context.RegisterClassMap<TransactionMap>();
-                reader.ReadLine();//Skip first line. Timezone=UTC
-                transactions = csv.GetRecords<Transaction>().ToList();
+                using (var reader = new StreamReader(filePath))
+                using (var csv = new CsvReader(reader, _config))
+                {
+                    csv.Context.RegisterClassMap<TransactionMap>();
+                    reader.ReadLine();//Skip first line. Timezone=UTC
+                    transactions = csv.GetRecords<Transaction>().ToList();
+                }
+            }
+            catch (Exception ex)
+            {
+                //we can log exception here
+                throw ex;
             }
 
             return transactions;
         }
 
-        public void WriteToFile(string filePath)
+        public bool WriteToFile(string filePath, List<Output> data)
         {
-            throw new NotImplementedException();
+            var result = false;
+            
+            try
+            {
+                using (var writer = new StreamWriter(filePath))
+                using (var csv = new CsvWriter(writer, _config))
+                {
+                    csv.Context.RegisterClassMap<OutputMap>();
+                    csv.WriteHeader<Output>();
+                    csv.NextRecord();
+                    csv.WriteRecords(data);
+
+                    result = true;
+                }
+            }
+            catch (Exception ex)
+            {
+                //We can log exception here
+            }
+
+            return result;
         }
 
         public void Display(string filePath)
@@ -66,13 +93,29 @@ namespace FileManager.Services
             }
         }
 
-        public void ProcessRecord(Transaction data)
+        public List<Output> ProcessRecords(List<Transaction> data)
         {
-            var algoParamsDict = CleanupData(data.AlgoParams);
-            Console.WriteLine("Data= " + " ISIN:" + data.ISIN + " CFICode:" + data.CFICode + " Venue:" + data.Venue + " ContractSize:"+algoParamsDict["PriceMultiplier"]);
+            var outputList = new List<Output>();
+            foreach (var item in data)
+            {
+                var algoParamsDict = ReadContractSize(item.AlgoParams);
+
+                outputList.Add(
+                    new Output
+                    {
+                        ISIN = item.ISIN,
+                        CFICode = item.CFICode,
+                        Venue = item.Venue,
+                        ContractSize = !string.IsNullOrWhiteSpace(algoParamsDict[PriceMultiplier]) ? Convert.ToDouble(algoParamsDict[PriceMultiplier]) : 0
+                    }
+                );
+                //Console.WriteLine("Data= " + " ISIN:" + item.ISIN + " CFICode:" + item.CFICode + " Venue:" + item.Venue + " ContractSize:" + algoParamsDict["PriceMultiplier"]);
+            }
+
+            return outputList;
         }
 
-        private Dictionary<string, dynamic> CleanupData(string algoParams)
+        private Dictionary<string, dynamic> ReadContractSize(string algoParams)
         {
             var arr = algoParams.Replace("|", string.Empty).Split(";");
 
@@ -92,6 +135,28 @@ namespace FileManager.Services
             }
 
             return algoParamsData;
+        }
+
+        public void Process(string inputFilePath, string outputFilePath)
+        {
+            try
+            {
+
+                SetupConfig();
+
+                //Read Data
+                var transactions = ReadFile(inputFilePath);
+
+                //Process records
+                var output = ProcessRecords(transactions);
+
+                //Write To File
+                WriteToFile(outputFilePath, output);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
         }
     }
 }

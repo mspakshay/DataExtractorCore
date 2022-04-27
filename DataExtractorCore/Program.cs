@@ -9,11 +9,12 @@ namespace DataExtractorCore
 {
     class Program
     {
-        public static string _filePath;
-        
+        public readonly static string _inputFilePath = @"..\..\..\Data\DataExtractor_Example_Input.csv";
+        public readonly static string _outputFilePath = @"..\..\..\Data\DataExtractor_Example_Output_" + Guid.NewGuid().ToString() + ".csv";
+
         static void Main(string[] args)
         {
-            _filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), @"..\..\..\Data\DataExtractor_Example_Input.csv");
+            var _filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _inputFilePath);
 
             //setup our DI
             var serviceProvider = new ServiceCollection()
@@ -22,17 +23,10 @@ namespace DataExtractorCore
 
              
             var fileManager = serviceProvider.GetService<IFileManager>();
-
-            fileManager.SetupConfig(isHeaderPresent: true, cultureInfo: CultureInfo.InvariantCulture);
             
-            //Read Data
-            var transactions = fileManager.ReadFile(_filePath);
+            fileManager.Process(_inputFilePath,_outputFilePath);
 
-            //Process records
-            foreach (var data in transactions)
-            {
-                fileManager.ProcessRecord(data);  
-            }
+            Console.WriteLine("Processing Completed.");
             Console.ReadLine();
 
 
