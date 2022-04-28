@@ -45,9 +45,5 @@ namespace FileManager.Model
         public string Index { get; set; }
         public int Sector { get; set; }
 
-        public override string ToString()
-        {
-            return "Transaction: " + ISIN + " " + Currency;
-        }
     }
 }

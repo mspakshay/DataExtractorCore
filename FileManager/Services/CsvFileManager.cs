@@ -9,6 +9,8 @@ using System.Linq;
 using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
+using FileManager.ServiceContracts;
+using System.ComponentModel.DataAnnotations;
 
 namespace FileManager.Services
 {
@@ -19,10 +21,6 @@ namespace FileManager.Services
 
         public CsvFileManager()
         {
-        }
-
-        public CsvConfiguration SetupConfig()
-        {
             if (_config == null)
             {
                 _config = new CsvConfiguration(CultureInfo.InvariantCulture)
@@ -31,13 +29,21 @@ namespace FileManager.Services
                     PrepareHeaderForMatch = args => args.Header.ToLower()
                 };
             }
-
-            return _config;
         }
 
         public List<Transaction> ReadFile(string filePath)
         {
-            List<Transaction> transactions = new List<Transaction>();
+            List<Transaction> transactions = new List<Transaction>(); ;
+
+            if (string.IsNullOrWhiteSpace(filePath))
+            {
+                throw new ArgumentException("Invalid Argument : filePath ");
+            }
+
+            if (!File.Exists(filePath))
+            {
+                throw new FileNotFoundException();
+            }
 
             try
             {
@@ -52,19 +58,26 @@ namespace FileManager.Services
             catch (Exception ex)
             {
                 //we can log exception here
-                throw ex;
+                throw new Exception("Error while reading file");
             }
 
             return transactions;
         }
 
-        public bool WriteToFile(string filePath, List<Output> data)
+        public bool WriteToFile(string directoryPath, List<Output> data)
         {
-            var result = false;
-            
+            if (!Directory.Exists(directoryPath))
+            {
+                throw new DirectoryNotFoundException("Directory not Found:" + directoryPath);
+            }
+
+            bool result = false;
+            string outputFileName = $"DataExtractor_Example_Output_{Guid.NewGuid().ToString()}.csv";
+
             try
             {
-                using (var writer = new StreamWriter(filePath))
+                
+                using (var writer = new StreamWriter(string.Format("{0}\\{1}", directoryPath, outputFileName)))
                 using (var csv = new CsvWriter(writer, _config))
                 {
                     csv.Context.RegisterClassMap<OutputMap>();
@@ -77,9 +90,9 @@ namespace FileManager.Services
             }
             catch (Exception ex)
             {
-                //We can log exception here
+                //Log exceptions here
+                throw new Exception("Error while writing to file:"+ outputFileName);
             }
-
             return result;
         }
 
@@ -141,9 +154,6 @@ namespace FileManager.Services
         {
             try
             {
-
-                SetupConfig();
-
                 //Read Data
                 var transactions = ReadFile(inputFilePath);
 

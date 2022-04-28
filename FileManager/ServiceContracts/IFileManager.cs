@@ -6,15 +6,15 @@ using System.Globalization;
 using System.Text;
 
 
-namespace FileManager.Services
+namespace FileManager.ServiceContracts
 {
     public interface IFileManager
     {
         //CsvConfiguration SetupConfig();
-        //List<Transaction> ReadFile(string filePath);
-        //bool WriteToFile(string filePath, List<Output> data);
-        //void Display(string filePath);
-        //List<Output> ProcessRecords(List<Transaction> data);
+        List<Transaction> ReadFile(string filePath);
+        bool WriteToFile(string directoryPath, List<Output> data);
+        void Display(string filePath);
+        List<Output> ProcessRecords(List<Transaction> data);
         void Process(string inputFilePath, string outputFilePath);
     }
 }

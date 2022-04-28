@@ -1,4 +1,5 @@
-﻿using FileManager.Services;
+﻿using FileManager.ServiceContracts;
+using FileManager.Services;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Globalization;
@@ -14,22 +15,18 @@ namespace DataExtractorCore
 
         static void Main(string[] args)
         {
-            var _filePath = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), _inputFilePath);
-
-            //setup our DI
+            //setup DI
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IFileManager, CsvFileManager>()
                 .BuildServiceProvider();
-
-             
+ 
             var fileManager = serviceProvider.GetService<IFileManager>();
             
             fileManager.Process(_inputFilePath,_outputFilePath);
 
             Console.WriteLine("Processing Completed.");
+
             Console.ReadLine();
-
-
         }
     }
 }

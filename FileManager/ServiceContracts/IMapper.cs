@@ -3,7 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace FileManager.Services
+namespace FileManager.ServiceContracts
 {
     public interface IMapper
     {
