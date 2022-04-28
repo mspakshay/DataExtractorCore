@@ -10,7 +10,6 @@ using System.Text;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Linq;
 using FileManager.ServiceContracts;
-using System.ComponentModel.DataAnnotations;
 
 namespace FileManager.Services
 {
@@ -55,7 +54,7 @@ namespace FileManager.Services
                     transactions = csv.GetRecords<Transaction>().ToList();
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //we can log exception here
                 throw new Exception("Error while reading file");
@@ -88,7 +87,7 @@ namespace FileManager.Services
                     result = true;
                 }
             }
-            catch (Exception ex)
+            catch (Exception)
             {
                 //Log exceptions here
                 throw new Exception("Error while writing to file:"+ outputFileName);
@@ -96,22 +95,12 @@ namespace FileManager.Services
             return result;
         }
 
-        public void Display(string filePath)
-        {
-            var records = ReadFile(filePath);
-
-            foreach (var item in records)
-            {
-                Console.WriteLine(item.ToString());
-            }
-        }
-
         public List<Output> ProcessRecords(List<Transaction> data)
         {
             var outputList = new List<Output>();
             foreach (var item in data)
             {
-                var algoParamsDict = ReadContractSize(item.AlgoParams);
+                var algoParamsObj = ReadContractSize(item.AlgoParams);
 
                 outputList.Add(
                     new Output
@@ -119,35 +108,41 @@ namespace FileManager.Services
                         ISIN = item.ISIN,
                         CFICode = item.CFICode,
                         Venue = item.Venue,
-                        ContractSize = !string.IsNullOrWhiteSpace(algoParamsDict[PriceMultiplier]) ? Convert.ToDouble(algoParamsDict[PriceMultiplier]) : 0
+                        ContractSize = algoParamsObj?.PriceMultiplier ?? 0
                     }
-                );
-                //Console.WriteLine("Data= " + " ISIN:" + item.ISIN + " CFICode:" + item.CFICode + " Venue:" + item.Venue + " ContractSize:" + algoParamsDict["PriceMultiplier"]);
+                );                
             }
 
             return outputList;
         }
 
-        private Dictionary<string, dynamic> ReadContractSize(string algoParams)
+        private AlgoParams ReadContractSize(string algoParams)
         {
-            var arr = algoParams.Replace("|", string.Empty).Split(";");
-
-            Dictionary<string, dynamic> algoParamsData = new Dictionary<string, dynamic>();
-            foreach (var item in arr)
+            AlgoParams algoParamsObj = null;
+            try
             {
-                var d = item.Split(":");
-                if (!algoParamsData.ContainsKey(d[0]))
-                {
-                    algoParamsData.Add(d[0], d[1]);
-                }
-                else
-                {
-                    throw new Exception("Duplicate Key");
-                }
-                    
-            }
+                var arr = algoParams.Replace("|", string.Empty).Split(";");
 
-            return algoParamsData;
+                Dictionary<string, string> algoParamsData = new Dictionary<string, string>();
+                foreach (var item in arr)
+                {
+                    var d = item.Split(":");
+                    if (!algoParamsData.ContainsKey(d[0]))
+                    {
+                        algoParamsData.Add(d[0], d[1]);
+                    }
+                }
+
+                var jsonAlgoParams = JsonConvert.SerializeObject(algoParamsData);
+                algoParamsObj = JsonConvert.DeserializeObject<AlgoParams>(jsonAlgoParams);
+
+            }
+            catch (Exception)
+            {
+                //log exception here
+                throw new Exception("Error while reading contract size");
+            }
+            return algoParamsObj;
         }
 
         public void Process(string inputFilePath, string outputFilePath)

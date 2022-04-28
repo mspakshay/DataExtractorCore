@@ -70,18 +70,18 @@ namespace FileManagerTests
 
         [Test]
         [TestCase(@"E:\InvalidDirectory")]
-        public void ReadFile_InvalidFilePath_ThrowsDirectoryNotFoundException(string directoryPath)
+        public void WriteToFile_InvalidFilePath_ThrowsDirectoryNotFoundException(string directoryPath)
         {
             Assert.Throws<DirectoryNotFoundException>(() => _fileManagerService.WriteToFile(directoryPath, _validOutputDataList));
         }
 
         [Test]
         [TestCase(@"..\..\..\Data")]
-        public void ReadFile_ValidFilePath_Creates_and_Writes_To_File(string directoryPath)
+        public void WriteToFile_ValidFilePath_Creates_and_Writes_To_File(string directoryPath)
         {
             bool result = _fileManagerService.WriteToFile(directoryPath, _validOutputDataList);
 
-            Assert.AreEqual(true, result);
+            Assert.IsTrue(result);
 
         }
 

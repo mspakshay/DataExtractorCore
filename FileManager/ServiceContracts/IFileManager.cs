@@ -13,7 +13,6 @@ namespace FileManager.ServiceContracts
         //CsvConfiguration SetupConfig();
         List<Transaction> ReadFile(string filePath);
         bool WriteToFile(string directoryPath, List<Output> data);
-        void Display(string filePath);
         List<Output> ProcessRecords(List<Transaction> data);
         void Process(string inputFilePath, string outputFilePath);
     }

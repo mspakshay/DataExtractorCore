@@ -11,7 +11,7 @@ namespace DataExtractorCore
     class Program
     {
         public readonly static string _inputFilePath = @"..\..\..\Data\DataExtractor_Example_Input.csv";
-        public readonly static string _outputFilePath = @"..\..\..\Data\DataExtractor_Example_Output_" + Guid.NewGuid().ToString() + ".csv";
+        public readonly static string _outputFilePath = @"..\..\..\Data";
 
         static void Main(string[] args)
         {
@@ -19,13 +19,12 @@ namespace DataExtractorCore
             var serviceProvider = new ServiceCollection()
                 .AddSingleton<IFileManager, CsvFileManager>()
                 .BuildServiceProvider();
- 
+
             var fileManager = serviceProvider.GetService<IFileManager>();
-            
+
             fileManager.Process(_inputFilePath,_outputFilePath);
 
             Console.WriteLine("Processing Completed.");
-
             Console.ReadLine();
         }
     }
