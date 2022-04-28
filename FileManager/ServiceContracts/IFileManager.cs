@@ -14,6 +14,6 @@ namespace FileManager.ServiceContracts
         List<Transaction> ReadFile(string filePath);
         bool WriteToFile(string directoryPath, List<Output> data);
         List<Output> ProcessRecords(List<Transaction> data);
-        void Process(string inputFilePath, string outputFilePath);
+        bool Process(string inputFilePath, string outputFilePath);
     }
 }
