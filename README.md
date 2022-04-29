@@ -29,3 +29,10 @@ This is NUnit Test Project. This Projects contains methods to test CsvFileManage
 
 ![image](https://user-images.githubusercontent.com/11799381/165885985-038939d7-dc4c-4e08-aec1-620e5e7c5422.png)
 
+# Execution:
+![image](https://user-images.githubusercontent.com/11799381/165887231-6cc67eb9-3700-4a9d-90a3-be3a51bbfb9d.png)
+
+# Sample Output Csv:
+![image](https://user-images.githubusercontent.com/11799381/165887342-1ac1f784-bd1b-439d-a4ce-f51c2c4476db.png)
+
+
