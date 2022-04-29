@@ -15,16 +15,16 @@ namespace DataExtractorCore
 
         static void Main(string[] args)
         {
-
-            //DI Setup
-            var serviceProvider = new ServiceCollection()
+            try
+            {
+                //DI Setup
+                var serviceProvider = new ServiceCollection()
                 .AddSingleton<IFileManager, CsvFileManager>()
                 .BuildServiceProvider();
 
-            var fileManager = serviceProvider.GetService<IFileManager>();
+                var fileManager = serviceProvider.GetService<IFileManager>();
 
-            try
-            {
+            
                 var result = fileManager.Process(_inputFilePath, _outputFilePath);
                 Console.WriteLine("Processing Completed.");
             }

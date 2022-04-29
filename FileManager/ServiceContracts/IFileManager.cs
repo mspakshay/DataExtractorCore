@@ -10,7 +10,6 @@ namespace FileManager.ServiceContracts
 {
     public interface IFileManager
     {
-        //CsvConfiguration SetupConfig();
         List<Transaction> ReadFile(string filePath);
         bool WriteToFile(string directoryPath, List<Output> data);
         List<Output> ProcessRecords(List<Transaction> data);
